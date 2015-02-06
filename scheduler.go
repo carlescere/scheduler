@@ -7,8 +7,6 @@ import (
 	"time"
 )
 
-type jobType int
-
 type scheduled interface {
 	nextRun() (time.Duration, error)
 }
@@ -48,16 +46,70 @@ func (d daily) nextRun() (time.Duration, error) {
 	return date.Sub(now), nil
 }
 
-func EverySeconds(t time.Duration) *Job {
-	return &Job{schedule: recurrent{units: t, period: time.Second}}
+type weekly struct {
+	day time.Weekday
+	d   daily
+}
+
+func (w weekly) nextRun() (time.Duration, error) {
+	now := time.Now()
+	year, month, day := now.Date()
+	numDays := w.day - now.Weekday()
+	if numDays == 0 {
+		date := time.Date(year, month, day, w.d.hour, w.d.min, w.d.sec, 0, time.Local)
+		if now.Before(date) {
+			return date.Sub(now), nil
+		}
+		numDays = 7
+	} else if numDays < 0 {
+		numDays += 7
+	}
+	date := time.Date(year, month, day+int(numDays), w.d.hour, w.d.min, w.d.sec, 0, time.Local)
+	return date.Sub(now), nil
+}
+
+func Every(t time.Duration) *Job {
+	return &Job{schedule: recurrent{units: t}}
+}
+
+func (j *Job) Minutes() *Job {
+	r := j.schedule.(recurrent)
+	r.period = time.Minute
+	j.schedule = r
+	return j
+}
+
+func (j *Job) Hours() *Job {
+	r := j.schedule.(recurrent)
+	r.period = time.Hour
+	j.schedule = r
+	return j
+}
+
+func (j *Job) Seconds() *Job {
+	r := j.schedule.(recurrent)
+	r.period = time.Second
+	j.schedule = r
+	return j
 }
 
 func EveryDay() *Job {
 	return &Job{schedule: daily{}}
 }
 
+func EveryMonday() *Job {
+	return &Job{schedule: weekly{day: time.Monday}}
+}
+
 func (j *Job) At(hourTime string) *Job {
-	d := j.schedule.(daily)
+	var d *daily
+	aux, ok := j.schedule.(daily)
+	if !ok {
+		w := j.schedule.(weekly)
+		d = &w.d
+	} else {
+		d = &aux
+	}
 	chunks := strings.Split(hourTime, ":")
 	switch len(chunks) {
 	case 1:
@@ -70,7 +122,6 @@ func (j *Job) At(hourTime string) *Job {
 		d.min, _ = strconv.Atoi(chunks[1])
 		d.sec, _ = strconv.Atoi(chunks[2])
 	}
-	j.schedule = d
 	return j
 }
 
