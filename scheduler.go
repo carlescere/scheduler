@@ -4,9 +4,14 @@
 //  https://github.com/dbader/schedule
 //
 // Uses include:
-//  scheduler.Every(5).Seconds().Run(function)
-//  scheduler.Every().Day().Run(function)
-//  scheduler.Every().Sunday().At("08:30").Run(function)
+//  func main() {
+//    job := func() {
+//	fmt.Println("Time's up!")
+//    }
+//    scheduler.Every(5).Seconds().Run(function)
+//    scheduler.Every().Day().Run(function)
+//    scheduler.Every().Sunday().At("08:30").Run(function)
+//  }
 package scheduler
 
 import (
