@@ -1,4 +1,5 @@
 # scheduler
+[![GoDoc](https://godoc.org/github.com/carlescere/scheduler?status.svg)](https://godoc.org/github.com/carlescere/scheduler)
 Job scheduling made easy.
 
 Scheduler allows you to schedule recurrent jobs with an easy-to-read syntax.
