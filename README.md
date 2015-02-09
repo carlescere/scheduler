@@ -17,4 +17,4 @@ scheduler.Every().Monday().At("08:30").Run(job)
 ```
 
 ## License
-Distributed under MIT license. See `LICENSE.txt` for more information.
+Distributed under MIT license. See `LICENSE` for more information.
