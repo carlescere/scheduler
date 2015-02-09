@@ -41,7 +41,7 @@ type recurrent struct {
 
 func (r recurrent) nextRun() (time.Duration, error) {
 	if r.units == 0 || r.period == 0 {
-		return 0, errors.New("cannot set recurrent time with 0.")
+		return 0, errors.New("cannot set recurrent time with 0")
 	}
 	return r.units * r.period, nil
 }
