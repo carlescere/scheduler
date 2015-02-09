@@ -1,6 +1,6 @@
 // Replacement for cron based on:
 //  http://adam.herokuapp.com/past/2010/4/13/rethinking_cron/
-//  and
+// and
 //  https://github.com/dbader/schedule
 //
 // Uses include:
