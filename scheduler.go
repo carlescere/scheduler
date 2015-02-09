@@ -11,7 +11,6 @@ package scheduler
 
 import (
 	"errors"
-	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -24,8 +23,8 @@ type scheduled interface {
 // Defines a Job and allows to stop a scheduled job or run it.
 type Job struct {
 	fn       func()
-	Quit     <-chan bool
-	SkipWait <-chan bool
+	Quit     chan bool
+	SkipWait chan bool
 	err      error
 	schedule scheduled
 }
@@ -37,7 +36,7 @@ type recurrent struct {
 
 func (r recurrent) nextRun() (time.Duration, error) {
 	if r.units == 0 || r.period == 0 {
-		return 0, errors.New("Cannot schedule with 0 time")
+		return 0, errors.New("Cannot set recurrent time with 0.")
 	}
 	return r.units * r.period, nil
 }
@@ -107,7 +106,11 @@ func (j *Job) At(hourTime string) *Job {
 	if j.err != nil {
 		return j
 	}
-	hour, min, sec := parseTime(hourTime)
+	hour, min, sec, err := parseTime(hourTime)
+	if err != nil {
+		j.err = err
+		return j
+	}
 	d, ok := j.schedule.(daily)
 	if !ok {
 		w, ok := j.schedule.(weekly)
@@ -133,15 +136,16 @@ func (j *Job) Run(f func()) (*Job, error) {
 	var next time.Duration
 	var err error
 	j.Quit = make(chan bool, 1)
+	j.SkipWait = make(chan bool, 1)
 	j.fn = f
+	// Check for possible errors in scheduling
+	_, err = j.schedule.nextRun()
+	if err != nil {
+		return nil, err
+	}
 	go func(j *Job) {
 		for {
-			next, err = j.schedule.nextRun()
-			log.Printf("Next: %v\n", next)
-			if err != nil {
-				log.Printf("Job schedule error: %v\n", err)
-				return
-			}
+			next, _ = j.schedule.nextRun()
 			select {
 			case <-j.Quit:
 				return
@@ -155,18 +159,38 @@ func (j *Job) Run(f func()) (*Job, error) {
 	return j, nil
 }
 
-func parseTime(str string) (hour, min, sec int) {
+func parseTime(str string) (hour, min, sec int, err error) {
 	chunks := strings.Split(str, ":")
+	var hourStr, minStr, secStr string
 	switch len(chunks) {
 	case 1:
-		hour, _ = strconv.Atoi(chunks[0])
+		hourStr = chunks[0]
+		minStr = "0"
+		secStr = "0"
 	case 2:
-		hour, _ = strconv.Atoi(chunks[0])
-		min, _ = strconv.Atoi(chunks[1])
+		hourStr = chunks[0]
+		minStr = chunks[1]
+		secStr = "0"
 	case 3:
-		hour, _ = strconv.Atoi(chunks[0])
-		min, _ = strconv.Atoi(chunks[1])
-		sec, _ = strconv.Atoi(chunks[2])
+		hourStr = chunks[0]
+		minStr = chunks[1]
+		secStr = chunks[2]
+	}
+	hour, err = strconv.Atoi(hourStr)
+	if err != nil {
+		return 0, 0, 0, errors.New("Bad Time")
+	}
+	min, err = strconv.Atoi(minStr)
+	if err != nil {
+		return 0, 0, 0, errors.New("Bad Time")
+	}
+	sec, err = strconv.Atoi(secStr)
+	if err != nil {
+		return 0, 0, 0, errors.New("Bad Time")
+	}
+
+	if hour > 23 || min > 59 || sec > 59 {
+		return 0, 0, 0, errors.New("Bad Time")
 	}
 
 	return
@@ -176,7 +200,7 @@ func (j *Job) dayOfWeek(d time.Weekday) *Job {
 	if j.schedule != nil {
 		j.err = errors.New("Bad function chaining")
 	}
-	j.schedule = weekly{day: time.Monday}
+	j.schedule = weekly{day: d}
 	return j
 }
 
