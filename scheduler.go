@@ -1,4 +1,4 @@
-// Replacement for cron based on:
+// Package scheduler is a cron replacement based on:
 //  http://adam.herokuapp.com/past/2010/4/13/rethinking_cron/
 // and
 //  https://github.com/dbader/schedule
@@ -25,7 +25,7 @@ type scheduled interface {
 	nextRun() (time.Duration, error)
 }
 
-// Defines a Job and allows to stop a scheduled job or run it.
+// Job defines a running job and allows to stop a scheduled job or run it.
 type Job struct {
 	fn       func()
 	Quit     chan bool
@@ -41,7 +41,7 @@ type recurrent struct {
 
 func (r recurrent) nextRun() (time.Duration, error) {
 	if r.units == 0 || r.period == 0 {
-		return 0, errors.New("Cannot set recurrent time with 0.")
+		return 0, errors.New("cannot set recurrent time with 0.")
 	}
 	return r.units * r.period, nil
 }
@@ -91,7 +91,7 @@ func (w weekly) nextRun() (time.Duration, error) {
 	return date.Sub(now), nil
 }
 
-// Defines when to run a job. For a recurrent jobs (n seconds/minutes/hours) you should // specify the unit and then call to the correspondent period method.
+// Every defines when to run a job. For a recurrent jobs (n seconds/minutes/hours) you should // specify the unit and then call to the correspondent period method.
 func Every(times ...time.Duration) *Job {
 	switch len(times) {
 	case 0:
@@ -102,11 +102,11 @@ func Every(times ...time.Duration) *Job {
 		// Yeah... I don't like it either. But go does not support default
 		// parameters nor method overloading. In an ideal world should
 		// return an error at compile time not at runtime. :/
-		return &Job{err: errors.New("Too many arguments in Every")}
+		return &Job{err: errors.New("too many arguments in Every")}
 	}
 }
 
-// Let's you define a specific time when the job would be run. Does not work with
+// At lets you define a specific time when the job would be run. Does not work with
 // recurrent jobs.
 // Time should be defined as a string separated by a colon. Could be used as "08:35:30",
 // "08:35" or "8" for only the hours.
@@ -123,7 +123,7 @@ func (j *Job) At(hourTime string) *Job {
 	if !ok {
 		w, ok := j.schedule.(weekly)
 		if !ok {
-			j.err = errors.New("Bad function chaining")
+			j.err = errors.New("bad function chaining")
 			return j
 		}
 		w.d.setTime(hour, min, sec)
@@ -135,8 +135,8 @@ func (j *Job) At(hourTime string) *Job {
 	return j
 }
 
-// Set the job to the schedule and returns the pointer to the job so it may be stopped
-// or executed without waiting or an error.
+// Run sets the job to the schedule and returns the pointer to the job so it may be
+// stopped or executed without waiting or an error.
 func (j *Job) Run(f func()) (*Job, error) {
 	if j.err != nil {
 		return nil, j.err
@@ -186,19 +186,19 @@ func parseTime(str string) (hour, min, sec int, err error) {
 	}
 	hour, err = strconv.Atoi(hourStr)
 	if err != nil {
-		return 0, 0, 0, errors.New("Bad Time")
+		return 0, 0, 0, errors.New("bad time")
 	}
 	min, err = strconv.Atoi(minStr)
 	if err != nil {
-		return 0, 0, 0, errors.New("Bad Time")
+		return 0, 0, 0, errors.New("bad time")
 	}
 	sec, err = strconv.Atoi(secStr)
 	if err != nil {
-		return 0, 0, 0, errors.New("Bad Time")
+		return 0, 0, 0, errors.New("bad time")
 	}
 
 	if hour > 23 || min > 59 || sec > 59 {
-		return 0, 0, 0, errors.New("Bad Time")
+		return 0, 0, 0, errors.New("bad time")
 	}
 
 	return
@@ -206,51 +206,51 @@ func parseTime(str string) (hour, min, sec int, err error) {
 
 func (j *Job) dayOfWeek(d time.Weekday) *Job {
 	if j.schedule != nil {
-		j.err = errors.New("Bad function chaining")
+		j.err = errors.New("bad function chaining")
 	}
 	j.schedule = weekly{day: d}
 	return j
 }
 
-// Sets the job to run every Monday.
+// Monday sets the job to run every Monday.
 func (j *Job) Monday() *Job {
 	return j.dayOfWeek(time.Monday)
 }
 
-// Sets the job to run every Tuesday.
+// Tuesday sets the job to run every Tuesday.
 func (j *Job) Tuesday() *Job {
 	return j.dayOfWeek(time.Tuesday)
 }
 
-// Sets the job to run every Wednesday.
+// Wednesday sets the job to run every Wednesday.
 func (j *Job) Wednesday() *Job {
 	return j.dayOfWeek(time.Wednesday)
 }
 
-// Sets the job to run every Thursday.
+// Thursday sets the job to run every Thursday.
 func (j *Job) Thursday() *Job {
 	return j.dayOfWeek(time.Thursday)
 }
 
-// Sets the job to run every Friday.
+// Friday sets the job to run every Friday.
 func (j *Job) Friday() *Job {
 	return j.dayOfWeek(time.Friday)
 }
 
-// Sets the job to run every Saturday.
+// Saturday sets the job to run every Saturday.
 func (j *Job) Saturday() *Job {
 	return j.dayOfWeek(time.Saturday)
 }
 
-// Sets the job to run every Sunday.
+// Sunday sets the job to run every Sunday.
 func (j *Job) Sunday() *Job {
 	return j.dayOfWeek(time.Sunday)
 }
 
-// Sets the job to run every day.
+// Day sets the job to run every day.
 func (j *Job) Day() *Job {
 	if j.schedule != nil {
-		j.err = errors.New("Bad function chaining")
+		j.err = errors.New("bad function chaining")
 	}
 	j.schedule = daily{}
 	return j
@@ -266,17 +266,19 @@ func (j *Job) timeOfDay(d time.Duration) *Job {
 	return j
 }
 
-// Sets the job to run every n Seconds where n was defined in the Every function.
+// Seconds sets the job to run every n Seconds where n was defined in the Every
+// function.
 func (j *Job) Seconds() *Job {
 	return j.timeOfDay(time.Second)
 }
 
-// Sets the job to run every n Minutes where n was defined in the Every function.
+// Minutes sets the job to run every n Minutes where n was defined in the Every
+// function.
 func (j *Job) Minutes() *Job {
 	return j.timeOfDay(time.Minute)
 }
 
-// Sets the job to run every n Hours where n was defined in the Every function.
+// Hours sets the job to run every n Hours where n was defined in the Every function.
 func (j *Job) Hours() *Job {
 	return j.timeOfDay(time.Hour)
 }
