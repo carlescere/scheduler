@@ -94,6 +94,9 @@ func Every(times ...time.Duration) *Job {
 	case 1:
 		return &Job{schedule: recurrent{units: times[0]}}
 	default:
+		// Yeah... I don't like it either. But go does not support default
+		// parameters nor method overloading. In an ideal world should
+		// return an error at compile time not at runtime. :/
 		return &Job{err: errors.New("Too many arguments in Every")}
 	}
 }
