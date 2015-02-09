@@ -1,12 +1,12 @@
 // Replacement for cron based on:
-// http://adam.herokuapp.com/past/2010/4/13/rethinking_cron/
-// and
-// https://github.com/dbader/schedule
+//  http://adam.herokuapp.com/past/2010/4/13/rethinking_cron/
+//  and
+//  https://github.com/dbader/schedule
 //
 // Uses include:
-// scheduler.Every(5).Seconds().Run(function)
-// scheduler.Every().Day().Run(function)
-// scheduler.Every().Sunday().At("08:30").Run(function)
+//  scheduler.Every(5).Seconds().Run(function)
+//  scheduler.Every().Day().Run(function)
+//  scheduler.Every().Sunday().At("08:30").Run(function)
 package scheduler
 
 import (
