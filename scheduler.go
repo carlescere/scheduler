@@ -37,11 +37,16 @@ type Job struct {
 type recurrent struct {
 	units  time.Duration
 	period time.Duration
+	done   bool
 }
 
-func (r recurrent) nextRun() (time.Duration, error) {
+func (r *recurrent) nextRun() (time.Duration, error) {
 	if r.units == 0 || r.period == 0 {
 		return 0, errors.New("cannot set recurrent time with 0")
+	}
+	if !r.done {
+		r.done = true
+		return 0, nil
 	}
 	return r.units * r.period, nil
 }
@@ -97,7 +102,9 @@ func Every(times ...time.Duration) *Job {
 	case 0:
 		return &Job{}
 	case 1:
-		return &Job{schedule: recurrent{units: times[0]}}
+		r := new(recurrent)
+		r.units = times[0]
+		return &Job{schedule: r}
 	default:
 		// Yeah... I don't like it either. But go does not support default
 		// parameters nor method overloading. In an ideal world should
@@ -147,13 +154,12 @@ func (j *Job) Run(f func()) (*Job, error) {
 	j.SkipWait = make(chan bool, 1)
 	j.fn = f
 	// Check for possible errors in scheduling
-	_, err = j.schedule.nextRun()
+	next, err = j.schedule.nextRun()
 	if err != nil {
 		return nil, err
 	}
 	go func(j *Job) {
 		for {
-			next, _ = j.schedule.nextRun()
 			select {
 			case <-j.Quit:
 				return
@@ -162,6 +168,7 @@ func (j *Job) Run(f func()) (*Job, error) {
 			case <-time.After(next):
 				go j.fn()
 			}
+			next, _ = j.schedule.nextRun()
 		}
 	}(j)
 	return j, nil
@@ -260,7 +267,7 @@ func (j *Job) timeOfDay(d time.Duration) *Job {
 	if j.err != nil {
 		return j
 	}
-	r := j.schedule.(recurrent)
+	r := j.schedule.(*recurrent)
 	r.period = d
 	j.schedule = r
 	return j

@@ -261,9 +261,11 @@ func TestEverySunday(t *testing.T) {
 	testWeekday(t, job, time.Sunday)
 }
 
-func testEveryX(t *testing.T, job *Job, err error, expected time.Duration) {
-	assert.Nil(t, err)
+func testEveryX(t *testing.T, job *Job, expected time.Duration) {
 	actual, err := job.schedule.nextRun()
+	assert.Nil(t, err)
+	assert.Equal(t, 0, actual)
+	actual, err = job.schedule.nextRun()
 	assert.Nil(t, err)
 	assert.Equal(t, expected, actual)
 }
@@ -272,22 +274,22 @@ func TestEverySeconds(t *testing.T) {
 	var units time.Duration
 	units = 3
 	expected := 3 * time.Second
-	job, err := Every(units).Seconds().Run(test)
-	testEveryX(t, job, err, expected)
+	job := Every(units).Seconds()
+	testEveryX(t, job, expected)
 }
 func TestEveryMinutes(t *testing.T) {
 	var units time.Duration
 	units = 3
 	expected := 3 * time.Minute
-	job, err := Every(units).Minutes().Run(test)
-	testEveryX(t, job, err, expected)
+	job := Every(units).Minutes()
+	testEveryX(t, job, expected)
 }
 func TestEveryHours(t *testing.T) {
 	var units time.Duration
 	units = 3
 	expected := 3 * time.Hour
-	job, err := Every(units).Hours().Run(test)
-	testEveryX(t, job, err, expected)
+	job := Every(units).Hours()
+	testEveryX(t, job, expected)
 }
 func TestBadRecurrent(t *testing.T) {
 	var units time.Duration
