@@ -271,28 +271,28 @@ func testEveryX(t *testing.T, job *Job, expected time.Duration) {
 }
 
 func TestEverySeconds(t *testing.T) {
-	var units time.Duration
+	var units int
 	units = 3
 	expected := 3 * time.Second
 	job := Every(units).Seconds()
 	testEveryX(t, job, expected)
 }
 func TestEveryMinutes(t *testing.T) {
-	var units time.Duration
+	var units int
 	units = 3
 	expected := 3 * time.Minute
 	job := Every(units).Minutes()
 	testEveryX(t, job, expected)
 }
 func TestEveryHours(t *testing.T) {
-	var units time.Duration
+	var units int
 	units = 3
 	expected := 3 * time.Hour
 	job := Every(units).Hours()
 	testEveryX(t, job, expected)
 }
 func TestBadRecurrent(t *testing.T) {
-	var units time.Duration
+	var units int
 	units = 0
 	job, err := Every(units).Seconds().Run(test)
 	assert.Nil(t, job)

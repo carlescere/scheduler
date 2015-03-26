@@ -35,7 +35,7 @@ type Job struct {
 }
 
 type recurrent struct {
-	units  time.Duration
+	units  int
 	period time.Duration
 	done   bool
 }
@@ -48,7 +48,7 @@ func (r *recurrent) nextRun() (time.Duration, error) {
 		r.done = true
 		return 0, nil
 	}
-	return r.units * r.period, nil
+	return time.Duration(r.units) * r.period, nil
 }
 
 type daily struct {
@@ -97,7 +97,7 @@ func (w weekly) nextRun() (time.Duration, error) {
 }
 
 // Every defines when to run a job. For a recurrent jobs (n seconds/minutes/hours) you should // specify the unit and then call to the correspondent period method.
-func Every(times ...time.Duration) *Job {
+func Every(times ...int) *Job {
 	switch len(times) {
 	case 0:
 		return &Job{}
