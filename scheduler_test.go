@@ -264,7 +264,7 @@ func TestEverySunday(t *testing.T) {
 func testEveryX(t *testing.T, job *Job, expected time.Duration) {
 	actual, err := job.schedule.nextRun()
 	assert.Nil(t, err)
-	assert.Equal(t, 0, actual)
+	assert.Equal(t, time.Duration(0), actual)
 	actual, err = job.schedule.nextRun()
 	assert.Nil(t, err)
 	assert.Equal(t, expected, actual)
