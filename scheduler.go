@@ -84,10 +84,6 @@ func (w weekly) nextRun() (time.Duration, error) {
 	year, month, day := now.Date()
 	numDays := w.day - now.Weekday()
 	if numDays == 0 {
-		date := time.Date(year, month, day, w.d.hour, w.d.min, w.d.sec, 0, time.Local)
-		if now.Before(date) {
-			return date.Sub(now), nil
-		}
 		numDays = 7
 	} else if numDays < 0 {
 		numDays += 7
