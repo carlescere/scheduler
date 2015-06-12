@@ -20,5 +20,12 @@ scheduler.Every().Day().Run(job)
 scheduler.Every().Monday().At("08:30").Run(job)
 ```
 
+## Not immediate recurrent jobs
+By default the behaviour of the recurrent jobs (Every(N) seconds, minutes, hours) is to start executing the job right away and then wait the required amount of time. By calling specifically `.NotImmediately()` you can override that behaviour and not execute it directly when the function `Run()` is called.
+
+```go
+scheduler.Every(5).Minutes().NotImmediately().Run(job)
+```
+
 ## License
 Distributed under MIT license. See `LICENSE` for more information.

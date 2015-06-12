@@ -92,7 +92,8 @@ func (w weekly) nextRun() (time.Duration, error) {
 	return date.Sub(now), nil
 }
 
-// Every defines when to run a job. For a recurrent jobs (n seconds/minutes/hours) you should // specify the unit and then call to the correspondent period method.
+// Every defines when to run a job. For a recurrent jobs (n seconds/minutes/hours) you
+// should specify the unit and then call to the correspondent period method.
 func Every(times ...int) *Job {
 	switch len(times) {
 	case 0:
@@ -107,6 +108,19 @@ func Every(times ...int) *Job {
 		// return an error at compile time not at runtime. :/
 		return &Job{err: errors.New("too many arguments in Every")}
 	}
+}
+
+// NotImmediately allows recurrent jobs not to be executed immediatelly after
+// definition. If a job is declared hourly won't start executing until the first hour
+// passed.
+func (j *Job) NotImmediately() *Job {
+	rj, ok := j.schedule.(*recurrent)
+	if !ok {
+		j.err = errors.New("bad function chaining")
+		return j
+	}
+	rj.done = true
+	return j
 }
 
 // At lets you define a specific time when the job would be run. Does not work with

@@ -213,6 +213,12 @@ func TestBadChain4(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
+func TestBadChain5(t *testing.T) {
+	job, err := Every().Monday().NotImmediately().Run(test)
+	assert.Nil(t, job)
+	assert.NotNil(t, err)
+}
+
 func TestBadEvery(t *testing.T) {
 	job, err := Every(1, 2).Seconds().Run(test)
 	assert.Nil(t, job)
@@ -261,10 +267,12 @@ func TestEverySunday(t *testing.T) {
 	testWeekday(t, job, time.Sunday)
 }
 
-func testEveryX(t *testing.T, job *Job, expected time.Duration) {
+func testEveryX(t *testing.T, job *Job, expected time.Duration, immediate bool) {
 	actual, err := job.schedule.nextRun()
 	assert.Nil(t, err)
-	assert.Equal(t, time.Duration(0), actual)
+	if immediate {
+		assert.Equal(t, time.Duration(0), actual)
+	}
 	actual, err = job.schedule.nextRun()
 	assert.Nil(t, err)
 	assert.Equal(t, expected, actual)
@@ -275,22 +283,33 @@ func TestEverySeconds(t *testing.T) {
 	units = 3
 	expected := 3 * time.Second
 	job := Every(units).Seconds()
-	testEveryX(t, job, expected)
+	testEveryX(t, job, expected, true)
 }
+
 func TestEveryMinutes(t *testing.T) {
 	var units int
 	units = 3
 	expected := 3 * time.Minute
 	job := Every(units).Minutes()
-	testEveryX(t, job, expected)
+	testEveryX(t, job, expected, true)
 }
+
 func TestEveryHours(t *testing.T) {
 	var units int
 	units = 3
 	expected := 3 * time.Hour
 	job := Every(units).Hours()
-	testEveryX(t, job, expected)
+	testEveryX(t, job, expected, true)
 }
+
+func TestEveryHoursNotImmediately(t *testing.T) {
+	var units int
+	units = 3
+	expected := 3 * time.Hour
+	job := Every(units).Hours().NotImmediately()
+	testEveryX(t, job, expected, false)
+}
+
 func TestBadRecurrent(t *testing.T) {
 	var units int
 	units = 0
