@@ -27,11 +27,12 @@ type scheduled interface {
 
 // Job defines a running job and allows to stop a scheduled job or run it.
 type Job struct {
-	fn       func()
-	Quit     chan bool
-	SkipWait chan bool
-	err      error
-	schedule scheduled
+	fn        func()
+	Quit      chan bool
+	SkipWait  chan bool
+	err       error
+	schedule  scheduled
+	isRunning bool
 }
 
 type recurrent struct {
@@ -174,9 +175,17 @@ func (j *Job) Run(f func()) (*Job, error) {
 			case <-j.Quit:
 				return
 			case <-j.SkipWait:
-				go j.fn()
+				go func(j *Job) {
+					j.isRunning = true
+					j.fn()
+					j.isRunning = false
+				}(j)
 			case <-time.After(next):
-				go j.fn()
+				go func(j *Job) {
+					j.isRunning = true
+					j.fn()
+					j.isRunning = false
+				}(j)
 			}
 			next, _ = j.schedule.nextRun()
 		}
@@ -298,4 +307,9 @@ func (j *Job) Minutes() *Job {
 // Hours sets the job to run every n Hours where n was defined in the Every function.
 func (j *Job) Hours() *Job {
 	return j.timeOfDay(time.Hour)
+}
+
+// IsRunning returns if the job is currently running
+func (j *Job) IsRunning() bool {
+	return j.isRunning
 }

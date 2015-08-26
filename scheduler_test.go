@@ -10,6 +10,34 @@ import (
 
 func test() {}
 
+func TestIsRunning(t *testing.T) {
+
+	fn := func() {
+		time.Sleep(35 * time.Millisecond)
+	}
+
+	job, err := Every(1).Seconds().Run(fn)
+	assert.Nil(t, err)
+	assert.NotNil(t, job)
+
+	var i int
+
+FOR:
+	for {
+		time.Sleep(20 * time.Millisecond)
+		i++
+
+		switch i {
+		case 1:
+			assert.Equal(t, true, job.IsRunning())
+
+		case 2:
+			assert.Equal(t, false, job.IsRunning())
+			break FOR
+		}
+	}
+}
+
 func TestExecution(t *testing.T) {
 	c := make(chan bool)
 	fn := func() {
