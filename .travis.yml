@@ -11,4 +11,5 @@ install:
   - if ! go get code.google.com/p/go.tools/cmd/cover; then go get golang.org/x/tools/cmd/cover; fi
   - go get github.com/stretchr/testify/assert
 script:
-  - $HOME/gopath/bin/goveralls -race -service=travis-ci -repotoken $COVERALLS_TOKEN
+  - $HOME/gopath/bin/goveralls -service=travis-ci -repotoken $COVERALLS_TOKEN
+  - go test -race
