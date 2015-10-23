@@ -18,6 +18,7 @@ import (
 	"errors"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -33,6 +34,7 @@ type Job struct {
 	err       error
 	schedule  scheduled
 	isRunning bool
+	sync.RWMutex
 }
 
 type recurrent struct {
@@ -175,22 +177,30 @@ func (j *Job) Run(f func()) (*Job, error) {
 			case <-j.Quit:
 				return
 			case <-j.SkipWait:
-				go func(j *Job) {
-					j.isRunning = true
-					j.fn()
-					j.isRunning = false
-				}(j)
+				go runJob(j)
 			case <-time.After(next):
-				go func(j *Job) {
-					j.isRunning = true
-					j.fn()
-					j.isRunning = false
-				}(j)
+				go runJob(j)
 			}
 			next, _ = j.schedule.nextRun()
 		}
 	}(j)
 	return j, nil
+}
+
+func (j *Job) setRunning(running bool) {
+	j.Lock()
+	defer j.Unlock()
+
+	j.isRunning = running
+}
+
+func runJob(job *Job) {
+	if job.IsRunning() {
+		return
+	}
+	job.setRunning(true)
+	job.fn()
+	job.setRunning(false)
 }
 
 func parseTime(str string) (hour, min, sec int, err error) {
@@ -311,5 +321,7 @@ func (j *Job) Hours() *Job {
 
 // IsRunning returns if the job is currently running
 func (j *Job) IsRunning() bool {
+	j.RLock()
+	defer j.RUnlock()
 	return j.isRunning
 }

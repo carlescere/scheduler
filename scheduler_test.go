@@ -20,22 +20,13 @@ func TestIsRunning(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, job)
 
-	var i int
+	time.Sleep(20 * time.Millisecond)
+	assert.Equal(t, true, job.IsRunning())
+	job.SkipWait <- true
+	assert.Equal(t, true, job.IsRunning())
 
-FOR:
-	for {
-		time.Sleep(20 * time.Millisecond)
-		i++
-
-		switch i {
-		case 1:
-			assert.Equal(t, true, job.IsRunning())
-
-		case 2:
-			assert.Equal(t, false, job.IsRunning())
-			break FOR
-		}
-	}
+	time.Sleep(20 * time.Millisecond)
+	assert.Equal(t, false, job.IsRunning())
 }
 
 func TestExecution(t *testing.T) {
