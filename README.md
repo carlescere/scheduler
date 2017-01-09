@@ -11,13 +11,32 @@ Inspired by the article **[Rethinking Cron](http://adam.heroku.com/past/2010/4/1
 
 ## How to use?
 ```go
-job := func() {
-      fmt.Println("Time's up!")
-}
+package main
 
-scheduler.Every(5).Minutes().Run(job)
-scheduler.Every().Day().Run(job)
-scheduler.Every().Monday().At("08:30").Run(job)
+import (
+	"fmt"
+	"runtime"
+	"time"
+
+	"github.com/carlescere/scheduler"
+)
+
+func main() {
+	job := func() {
+		t := time.Now()
+		fmt.Println("Time's up! @", t.UTC())
+	}
+      // Run every 2 seconds but not now.
+	scheduler.Every(2).Seconds().NotImmediately().Run(job)
+      
+      // Run now and every X.
+	scheduler.Every(5).Minutes().Run(job)
+	scheduler.Every().Day().Run(job)
+	scheduler.Every().Monday().At("08:30").Run(job)
+      
+      // Keep the program from not exiting.
+	runtime.Goexit()
+}
 ```
 
 ## How it works?
