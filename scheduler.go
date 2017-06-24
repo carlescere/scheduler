@@ -67,7 +67,7 @@ func (d *daily) setTime(h, m, s int) {
 }
 
 func (d daily) nextRun() (time.Duration, error) {
-	now := time.Now()
+	now := time.Now().UTC()
 	year, month, day := now.Date()
 	date := time.Date(year, month, day, d.hour, d.min, d.sec, 0, time.Local)
 	if now.Before(date) {
@@ -83,7 +83,7 @@ type weekly struct {
 }
 
 func (w weekly) nextRun() (time.Duration, error) {
-	now := time.Now()
+	now := time.Now().UTC()
 	year, month, day := now.Date()
 	numDays := w.day - now.Weekday()
 	if numDays == 0 {
