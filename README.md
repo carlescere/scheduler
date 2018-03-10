@@ -18,7 +18,7 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/carlescere/scheduler"
+	"github.com/he4d/scheduler"
 )
 
 func main() {
