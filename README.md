@@ -28,12 +28,12 @@ func main() {
 	}
       // Run every 2 seconds but not now.
 	scheduler.Every(2).Seconds().NotImmediately().Run(job)
-      
+
       // Run now and every X.
 	scheduler.Every(5).Minutes().Run(job)
 	scheduler.Every().Day().Run(job)
 	scheduler.Every().Monday().At("08:30").Run(job)
-      
+
       // Keep the program from not exiting.
 	runtime.Goexit()
 }
@@ -52,6 +52,14 @@ By default the behaviour of the recurrent jobs (Every(N) seconds, minutes, hours
 
 ```go
 scheduler.Every(5).Minutes().NotImmediately().Run(job)
+```
+
+## Delayed recurrent jobs
+
+Similar to `NotImmediately()` but allows to define a custom time to delay the first execution
+
+```go
+scheduler.Every(5).Minutes().Delay(10 * time.Second).Run(job)
 ```
 
 ## License

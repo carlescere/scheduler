@@ -38,9 +38,10 @@ type Job struct {
 }
 
 type recurrent struct {
-	units  int
-	period time.Duration
-	done   bool
+	units        int
+	period       time.Duration
+	initialDelay time.Duration
+	done         bool
 }
 
 func (r *recurrent) nextRun() (time.Duration, error) {
@@ -49,7 +50,7 @@ func (r *recurrent) nextRun() (time.Duration, error) {
 	}
 	if !r.done {
 		r.done = true
-		return 0, nil
+		return r.initialDelay, nil
 	}
 	return time.Duration(r.units) * r.period, nil
 }
@@ -123,6 +124,19 @@ func (j *Job) NotImmediately() *Job {
 		return j
 	}
 	rj.done = true
+	return j
+}
+
+// Delayed allows add a custom delay to start the job instead of execute it
+// immediatelly after definition. This is incompatible with NotImmediately()
+// in which case it will start in the next scheduled time regardless the Delay
+func (j *Job) Delay(delay time.Duration) *Job {
+	rj, ok := j.schedule.(*recurrent)
+	if !ok {
+		j.err = errors.New("bad function chaining")
+		return j
+	}
+	rj.initialDelay = delay
 	return j
 }
 

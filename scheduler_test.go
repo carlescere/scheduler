@@ -329,6 +329,17 @@ func TestEveryHoursNotImmediately(t *testing.T) {
 	testEveryX(t, job, expected, false)
 }
 
+func TestDelay(t *testing.T) {
+	job := Every(1).Hours().Delay(10 * time.Second)
+
+	actual, err := job.schedule.nextRun()
+	assert.Nil(t, err)
+	assert.Equal(t, 10*time.Second, actual)
+	actual, err = job.schedule.nextRun()
+	assert.Nil(t, err)
+	assert.Equal(t, 1*time.Hour, actual)
+}
+
 func TestBadRecurrent(t *testing.T) {
 	var units int
 	units = 0
