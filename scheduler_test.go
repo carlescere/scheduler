@@ -238,6 +238,18 @@ func TestBadChain5(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
+func TestBadChain6(t *testing.T) {
+	job, err := Every().Monday().Delay(1).Seconds().Run(test)
+	assert.Nil(t, job)
+	assert.NotNil(t, err)
+}
+
+func TestBadChain7(t *testing.T) {
+	job, err := Every(1).Minutes().Delay(1).Run(test)
+	assert.Nil(t, job)
+	assert.NotNil(t, err)
+}
+
 func TestBadEvery(t *testing.T) {
 	job, err := Every(1, 2).Seconds().Run(test)
 	assert.Nil(t, job)
