@@ -330,7 +330,7 @@ func TestEveryHoursNotImmediately(t *testing.T) {
 }
 
 func TestDelay(t *testing.T) {
-	job := Every(1).Hours().Delay(10 * time.Second)
+	job := Every(1).Hours().Delay(10).Seconds()
 
 	actual, err := job.schedule.nextRun()
 	assert.Nil(t, err)
