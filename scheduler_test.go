@@ -238,6 +238,18 @@ func TestBadChain5(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
+func TestBadChain6(t *testing.T) {
+	job, err := Every().Monday().Delay(1).Seconds().Run(test)
+	assert.Nil(t, job)
+	assert.NotNil(t, err)
+}
+
+func TestBadChain7(t *testing.T) {
+	job, err := Every(1).Minutes().Delay(1).Run(test)
+	assert.Nil(t, job)
+	assert.NotNil(t, err)
+}
+
 func TestBadEvery(t *testing.T) {
 	job, err := Every(1, 2).Seconds().Run(test)
 	assert.Nil(t, job)
@@ -327,6 +339,17 @@ func TestEveryHoursNotImmediately(t *testing.T) {
 	expected := 3 * time.Hour
 	job := Every(units).Hours().NotImmediately()
 	testEveryX(t, job, expected, false)
+}
+
+func TestDelay(t *testing.T) {
+	job := Every(1).Hours().Delay(10).Seconds()
+
+	actual, err := job.schedule.nextRun()
+	assert.Nil(t, err)
+	assert.Equal(t, 10*time.Second, actual)
+	actual, err = job.schedule.nextRun()
+	assert.Nil(t, err)
+	assert.Equal(t, 1*time.Hour, actual)
 }
 
 func TestBadRecurrent(t *testing.T) {
