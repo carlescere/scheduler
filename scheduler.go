@@ -173,15 +173,20 @@ func (j *Job) Run(f func()) (*Job, error) {
 	}
 	go func(j *Job) {
 		for {
-			select {
-			case <-j.Quit:
-				return
-			case <-j.SkipWait:
-				go runJob(j)
-			case <-time.After(next):
-				go runJob(j)
-			}
-			next, _ = j.schedule.nextRun()
+			func() {
+				t := time.NewTimer(next)
+				defer t.Stop()
+
+				select {
+				case <-j.Quit:
+					return
+				case <-j.SkipWait:
+					go runJob(j)
+				case <-t.C:
+					go runJob(j)
+				}
+				next, _ = j.schedule.nextRun()
+			}()
 		}
 	}(j)
 	return j, nil
