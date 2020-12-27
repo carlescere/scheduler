@@ -171,25 +171,28 @@ func (j *Job) Run(f func()) (*Job, error) {
 	if err != nil {
 		return nil, err
 	}
-	go func(j *Job) {
-		for {
-			func() {
-				t := time.NewTimer(next)
-				defer t.Stop()
-
-				select {
-				case <-j.Quit:
-					return
-				case <-j.SkipWait:
-					go runJob(j)
-				case <-t.C:
-					go runJob(j)
-				}
-				next, _ = j.schedule.nextRun()
-			}()
-		}
-	}(j)
+	go j.runner(next)
 	return j, nil
+}
+
+func (j *Job) runner(next time.Duration) {
+	for r := true; r; {
+		func() {
+			t := time.NewTimer(next)
+			defer t.Stop()
+
+			select {
+			case <-j.Quit:
+				r = false
+				return
+			case <-j.SkipWait:
+				go runJob(j)
+			case <-t.C:
+				go runJob(j)
+			}
+			next, _ = j.schedule.nextRun()
+		}()
+	}
 }
 
 func (j *Job) setRunning(running bool) {
