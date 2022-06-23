@@ -7,7 +7,7 @@ Job scheduling made easy.
 
 Scheduler allows you to schedule recurrent jobs with an easy-to-read syntax.
 
-Inspired by the article **[Rethinking Cron](http://adam.heroku.com/past/2010/4/13/rethinking_cron/)** and the **[schedule](https://github.com/dbader/schedule)** python module.
+Inspired by the article **[Rethinking Cron](http://adam.herokuapp.com/past/2010/4/13/rethinking_cron/)** and the **[schedule](https://github.com/dbader/schedule)** python module.
 
 ## How to use?
 ```go
